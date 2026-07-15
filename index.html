@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Reel Promotion Order System</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #090a0f 0%, #030712 50%, #0c1020 100%);
+            --primary: #00d2ff;
+            --primary-glow: rgba(0, 210, 255, 0.4);
+            --accent: #0066ff;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --glass-card: rgba(13, 17, 30, 0.7);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 15px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            min-height: 85vh;
+            background: var(--glass-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 210, 255, 0.05);
+            transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .app-container.admin-mode {
+            max-width: 1200px;
+            width: 95vw;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            box-shadow: 0 0 10px var(--primary-glow);
+            transition: width 0.3s ease;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .question-title {
+            font-size: 22px;
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .btn-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 20px;
+            color: var(--text-main);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-card:hover, .btn-card:active {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+            transform: scale(1.01);
+        }
+
+        .btn-card.selected {
+            background: linear-gradient(135deg, rgba(0, 210, 255, 0.1), rgba(0, 102, 255, 0.15));
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+
+        .card-icon {
+            font-size: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-back {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            border-color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .receipt-card {
+            background: rgba(5, 8, 20, 0.6);
+            border: 1px dashed var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .receipt-table tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .receipt-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-table td {
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .receipt-table td:first-child {
+            color: var(--text-muted);
+        }
+
+        .receipt-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .total-display {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .footer-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 14px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 16px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .metric-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .metric-card h3 {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter-box {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            background: rgba(5, 8, 20, 0.4);
+            margin-bottom: 20px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .admin-table th {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .status-completed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: #0f1322;
+            border: 1px solid var(--glass-border);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media(max-width: 600px) {
+            .search-filter-box > *, .admin-controls > * {
+                width: 100%;
+            }
+            .app-container {
+                padding: 16px;
+                border-radius: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        
+        <!-- PROGRESS & TOP HEADER SYSTEM -->
+        <div class="progress-container" id="globalProgress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="header-nav">
+            <div id="backButtonContainer"></div>
+            <div id="stepCounter" style="font-size: 14px; color: var(--text-muted); font-weight: 500;"></div>
+        </div>
+
+        <!-- SCREEN: HOME -->
+        <div class="screen active" id="screen-home">
+            <h1 class="hero-title">🎬 Reel Promotion System</h1>
+            <p class="hero-subtitle">Create your promotion order in a few easy steps.</p>
+            
+            <div class="btn-card" onclick="startOrderWorkflow()">
+                <div class="card-icon">📢</div>
+                <div>
+                    <div>Promotion</div>
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: normal; margin-top: 2px;">Start a new campaign order</div>
+                </div>
+            </div>
+
+            <div class="btn-card" onclick="navigateTo('screen-admin-auth')">
+                <div class="card-icon">🔒</div>
+                <div>
+                    <div>Admin Panel</div>
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: normal; margin-top: 2px;">View and manage submitted orders</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: DYNAMIC QUESTIONS PANEL -->
+        <div class="screen" id="screen-question">
+            <h2 class="question-title" id="questionPrompt">Loading question context...</h2>
+            <div id="optionsContainer" style="display:flex; flex-direction:column;"></div>
+        </div>
+
+        <!-- SCREEN: CUSTOMER REGISTRATION FORM -->
+        <div class="screen" id="screen-customer-details">
+            <h2 class="question-title">Customer Details</h2>
+            <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="custName" class="form-control" placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Mobile Number *</label>
+                    <input type="tel" id="custPhone" class="form-control" placeholder="10-digit number">
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp Number (Optional)</label>
+                    <input type="tel" id="custWhatsapp" class="form-control" placeholder="WhatsApp number">
+                </div>
+                <div class="form-group">
+                    <label>Instagram Username *</label>
+                    <input type="text" id="custInsta" class="form-control" placeholder="username">
+                </div>
+                <div class="form-group">
+                    <label>Business/Shop Name *</label>
+                    <input type="text" id="custBizName" class="form-control" placeholder="Brand Name">
+                </div>
+                <div class="form-group">
+                    <label>Business Category *</label>
+                    <input type="text" id="custBizCat" class="form-control" placeholder="Fashion, Tech, Food, etc.">
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions (Optional)</label>
+                    <textarea id="custNotes" class="form-control" rows="3" placeholder="Any specific requirements..."></textarea>
+                </div>
+            </div>
+            <button class="btn" onclick="validateAndProcessCustomerDetails()">Continue to Summary</button>
+        </div>
+
+        <!-- SCREEN: ORDER SUMMARY -->
+        <div class="screen" id="screen-summary">
+            <h2 class="question-title">Order Summary</h2>
+            <div class="receipt-card">
+                <table class="receipt-table" id="summaryTable"></table>
+                <div class="total-display" id="summaryTotalDisplay">Total Amount: ₹0</div>
+            </div>
+            <div class="footer-actions">
+                <button class="btn" onclick="commitOrderToStorage()">Submit Order</button>
+                <button class="btn btn-secondary" onclick="executeBackwardsRouteStep()">Back</button>
+                <button class="btn btn-secondary" onclick="returnToHome()">Return Home</button>
+            </div>
+        </div>
+
+        <!-- SCREEN: DISPATCH SUCCESS PAGE -->
+        <div class="screen" id="screen-success">
+            <div style="text-align: center; margin: auto 0;">
+                <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
+                <h2 class="question-title" style="text-align: center; margin-bottom: 8px;">Order Submitted Successfully!</h2>
+                <p style="color: var(--text-muted); margin-bottom: 30px;">Thank you! Your promotion file has been initialized.</p>
+                
+                <div class="receipt-card" style="text-align: left;">
+                    <div style="margin-bottom: 10px;"><strong>Order ID:</strong> <span id="successOrderId" style="color: var(--primary);"></span></div>
+                    <div><strong>Total Amount:</strong> <span id="successTotal" style="color: var(--success);"></span></div>
+                </div>
+            </div>
+            <div class="footer-actions">
+                <button class="btn" onclick="returnToHome()">Return Home</button>
+                <button class="btn btn-secondary" onclick="startOrderWorkflow()">Place Another Order</button>
+            </div>
+        </div>
+
+        <!-- SCREEN: ADMIN AUTHENTICATION GATEWAY -->
+        <div class="screen" id="screen-admin-auth">
+            <h2 class="question-title">Admin Authorization</h2>
+            <div class="form-group">
+                <label>Enter Administrative Password</label>
+                <input type="password" id="adminPasswordInput" class="form-control" placeholder="••••••••">
+                <div class="error-msg" id="authError">Incorrect password. Access denied.</div>
+            </div>
+            <div class="footer-actions" style="margin-top: 20px;">
+                <button class="btn" onclick="authenticateAdminGateway()">Verify Password</button>
+                <button class="btn btn-secondary" onclick="returnToHome()">Return Home</button>
+            </div>
+        </div>
+
+        <!-- SCREEN: ADMIN DASHBOARD COMMAND CENTER -->
+        <div class="screen" id="screen-admin-dashboard">
+            <div class="admin-header">
+                <div>
+                    <h2>Admin Dashboard</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);">Real-time orders management</p>
+                </div>
+                <button class="btn btn-secondary" onclick="exitAdminDashboard()">Exit Terminal</button>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card"><p>Total Orders</p><h3 id="m-total-orders">0</h3></div>
+                <div class="metric-card"><p>Total Revenue</p><h3 id="m-total-revenue">₹0</h3></div>
+                <div class="metric-card"><p>Pending Orders</p><h3 id="m-pending-orders" style="color: var(--warning);">0</h3></div>
+                <div class="metric-card"><p>Completed Orders</p><h3 id="m-completed-orders" style="color: var(--success);">0</h3></div>
+                <div class="metric-card"><p>Today's Orders</p><h3 id="m-today-orders" style="color: #a855f7;">0</h3></div>
+            </div>
+
+            <div class="search-filter-box">
+                <input type="text" id="adminSearchInput" class="form-control" style="flex: 2; min-width: 200px;" placeholder="Search ID, Customer Name, or Phone..." oninput="renderAdminTable()">
+                <select id="adminFilterSelect" class="form-control" style="flex: 1; min-width: 150px; background-color: #0f1322;" onchange="renderAdminTable()">
+                    <option value="all">All Orders</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="free">Free Orders</option>
+                    <option value="paid">Paid Orders</option>
+                </select>
+            </div>
+
+            <div class="admin-controls">
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 13px;" onclick="exportSystemJSON()">📤 Export JSON</button>
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 13px;" onclick="triggerImportSelection()">📥 Import JSON</button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="importSystemJSON(event)">
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 13px;" onclick="promptPasswordMutation()">🔑 Change Password</button>
+                <button class="btn btn-danger" style="padding: 10px 16px; font-size: 13px; margin-left: auto;" onclick="purgeSystemStorage()">🗑️ Clear All Orders</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Customer Name</th>
+                            <th>Phone Number</th>
+                            <th>Promotion Type</th>
+                            <th>Actor</th>
+                            <th>Editing Level</th>
+                            <th>Views</th>
+                            <th>Upload Channel</th>
+                            <th>Video Type</th>
+                            <th>Reel Duration</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- GLOBAL VIEWPORT MODAL OVERLAY -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; color: var(--primary);">Detailed Payload Log</h3>
+            <div id="modalDataContent" style="font-size: 14px; line-height: 1.6; color: var(--text-main);"></div>
+            <button class="btn" style="width: 100%; margin-top: 20px;" onclick="closeModal()">Close Window</button>
+        </div>
+    </div>
+
+    <script>
+        // System Data Dictionaries
+        const QUESTIONS = [
+            {
+                id: 1,
+                prompt: "What type of promotion do you want?",
+                key: "promoType",
+                options: [
+                    { label: "Free", value: "Free", cost: 0 },
+                    { label: "Paid", value: "Paid", cost: 0 }
+                ]
+            },
+            {
+                id: 2,
+                prompt: "Who has to be the actor?",
+                key: "actor",
+                options: [
+                    { label: "Yourself", value: "Yourself", cost: 0 },
+                    { label: "Any other person", value: "Any other person", cost: 100 },
+                    { label: "Tanmay", value: "Tanmay", cost: 200 }
+                ]
+            },
+            {
+                id: 3,
+                prompt: "What will be the editing level?",
+                key: "editingLevel",
+                options: [
+                    { label: "Cheap", value: "Cheap", cost: 0 },
+                    { label: "Medium", value: "Medium", cost: 50 },
+                    { label: "High Phone Edit", value: "High Phone Edit", cost: 100 },
+                    { label: "PC Editing", value: "PC Editing", cost: 200 }
+                ]
+            },
+            {
+                id: 4,
+                prompt: "What is the views estimation you want?",
+                key: "views",
+                options: [
+                    { label: "5k+", value: "5k+", cost: 50 },
+                    { label: "10k+", value: "10k+", cost: 100 },
+                    { label: "50k+", value: "50k+", cost: 150 },
+                    { label: "100k+", value: "100k+", cost: 200 }
+                ]
+            },
+            {
+                id: 5,
+                prompt: "On which channel do you want to upload the reel?",
+                key: "uploadChannel",
+                options: [
+                    { label: "My Channel", value: "My Channel", cost: 100 },
+                    { label: "Your Channel", value: "Your Channel", cost: 0 },
+                    { label: "Both Channels", value: "Both Channels", cost: 150 }
+                ]
+            },
+            {
+                id: 6,
+                prompt: "Which type of video do you want?",
+                key: "videoType",
+                options: [
+                    { label: "Song", value: "Song", cost: 150 },
+                    { label: "Normal Visiting", value: "Normal Visiting", cost: 150 },
+                    { label: "Suspenseful", value: "Suspenseful", cost: 150 },
+                    { label: "Funny", value: "Funny", cost: 150 }
+                ]
+            },
+            {
+                id: 7,
+                prompt: "What should be the duration of the reel?",
+                key: "duration",
+                options: [
+                    { label: "15 Seconds", value: "15 Seconds", cost: 0 },
+                    { label: "30 Seconds", value: "30 Seconds", cost: 0 },
+                    { label: "45 Seconds", value: "45 Seconds", cost: 0 },
+                    { label: "60 Seconds", value: "60 Seconds", cost: 0 }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {};
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeSystemPasswordStorage();
+            renderBackNavigationState();
+        });
+
+        function initializeSystemPasswordStorage() {
+            if (!localStorage.getItem('admin_system_key')) {
+                localStorage.setItem('admin_system_key', 'tatti');
+            }
+        }
+
+        function navigateTo(screenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+
+            const target = document.getElementById(screenId);
+            if(target) {
+                target.classList.add('active');
+            }
+
+            const mainContainer = document.getElementById('appContainer');
+            if (screenId === 'screen-admin-dashboard') {
+                mainContainer.classList.add('admin-mode');
+            } else {
+                mainContainer.classList.remove('admin-mode');
+            }
+
+            const progressWrapper = document.getElementById('globalProgress');
+            if (screenId === 'screen-question' || screenId === 'screen-customer-details' || screenId === 'screen-summary') {
+                progressWrapper.style.display = 'block';
+                calculateProgressMetrics();
+            } else {
+                progressWrapper.style.display = 'none';
+            }
+
+            renderBackNavigationState();
+        }
+
+        function calculateProgressMetrics() {
+            const activeElement = document.querySelector('.screen.active');
+            if (!activeElement) return;
+            const activeId = activeElement.id;
+            const bar = document.getElementById('progressBar');
+            const counter = document.getElementById('stepCounter');
+            
+            let percentage = 0;
+            let label = "";
+
+            if (activeId === 'screen-question') {
+                percentage = ((currentQuestionIndex + 1) / (QUESTIONS.length + 2)) * 100;
+                label = `Step ${currentQuestionIndex + 1} of ${QUESTIONS.length + 2}`;
+            } else if (activeId === 'screen-customer-details') {
+                percentage = ((QUESTIONS.length + 1) / (QUESTIONS.length + 2)) * 100;
+                label = `Step ${QUESTIONS.length + 1} of ${QUESTIONS.length + 2}`;
+            } else if (activeId === 'screen-summary') {
+                percentage = 100;
+                label = `Verification`;
+            }
+
+            bar.style.width = `${percentage}%`;
+            counter.innerText = label;
+        }
+
+        function renderBackNavigationState() {
+            const container = document.getElementById('backButtonContainer');
+            const activeElement = document.querySelector('.screen.active');
+            if (!activeElement) return;
+            const activeId = activeElement.id;
+
+            container.innerHTML = '';
+
+            if (activeId === 'screen-home' || activeId === 'screen-success' || activeId === 'screen-admin-dashboard') {
+                document.getElementById('stepCounter').innerText = '';
+                return; 
+            }
+            if (activeId === 'screen-question' && currentQuestionIndex === 0) {
+                return; 
+            }
+
+            const button = document.createElement('div');
+            button.className = 'btn-back';
+            button.innerHTML = '←';
+            button.onclick = executeBackwardsRouteStep;
+            container.appendChild(button);
+        }
+
+        function executeBackwardsRouteStep() {
+            const activeElement = document.querySelector('.screen.active');
+            if (!activeElement) return;
+            const activeId = activeElement.id;
+
+            if (activeId === 'screen-question') {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    renderQuestionIndexData();
+                }
+            } else if (activeId === 'screen-customer-details') {
+                currentQuestionIndex = QUESTIONS.length - 1;
+                navigateTo('screen-question');
+                renderQuestionIndexData();
+            } else if (activeId === 'screen-summary') {
+                if (selectedAnswers['promoType'] === 'Free') {
+                    currentQuestionIndex = 0;
+                    navigateTo('screen-question');
+                    renderQuestionIndexData();
+                } else {
+                    navigateTo('screen-customer-details');
+                }
+            } else if (activeId === 'screen-admin-auth') {
+                navigateTo('screen-home');
+            }
+        }
+
+        function returnToHome() {
+            currentQuestionIndex = 0;
+            selectedAnswers = {};
+            clearFormFields();
+            navigateTo('screen-home');
+        }
+
+        function clearFormFields() {
+            document.getElementById('custName').value = '';
+            document.getElementById('custPhone').value = '';
+            document.getElementById('custWhatsapp').value = '';
+            document.getElementById('custInsta').value = '';
+            document.getElementById('custBizName').value = '';
+            document.getElementById('custBizCat').value = '';
+            document.getElementById('custNotes').value = '';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('authError').style.display = 'none';
+        }
+
+        function startOrderWorkflow() {
+            currentQuestionIndex = 0;
+            selectedAnswers = {};
+            clearFormFields();
+            navigateTo('screen-question');
+            renderQuestionIndexData();
+        }
+
+        function renderQuestionIndexData() {
+            const currentQuestion = QUESTIONS[currentQuestionIndex];
+            document.getElementById('questionPrompt').innerText = currentQuestion.prompt;
+            
+            const optionsBox = document.getElementById('optionsContainer');
+            optionsBox.innerHTML = '';
+
+            currentQuestion.options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'btn-card';
+                if (selectedAnswers[currentQuestion.key] === opt.value) {
+                    card.classList.add('selected');
+                }
+                
+                card.innerHTML = `
+                    <div class="card-icon">✨</div>
+                    <div style="flex-grow:1;">${opt.label}</div>
+                `;
+                
+                card.onclick = () => selectOptionAction(currentQuestion.key, opt.value);
+                optionsBox.appendChild(card);
+            });
+            
+            calculateProgressMetrics();
+            renderBackNavigationState();
+        }
+
+        function selectOptionAction(key, value) {
+            selectedAnswers[key] = value;
+            
+            if (key === 'promoType' && value === 'Free') {
+                selectedAnswers['actor'] = 'N/A';
+                selectedAnswers['editingLevel'] = 'N/A';
+                selectedAnswers['views'] = 'N/A';
+                selectedAnswers['uploadChannel'] = 'N/A';
+                selectedAnswers['videoType'] = 'N/A';
+                selectedAnswers['duration'] = 'N/A';
+                
+                buildOrderSummaryDOM();
+                navigateTo('screen-summary');
+                return;
+            }
+
+            if (currentQuestionIndex < QUESTIONS.length - 1) {
+                currentQuestionIndex++;
+                renderQuestionIndexData();
+            } else {
+                navigateTo('screen-customer-details');
+            }
+        }
+
+        function validateAndProcessCustomerDetails() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const insta = document.getElementById('custInsta').value.trim();
+            const bizName = document.getElementById('custBizName').value.trim();
+            const bizCat = document.getElementById('custBizCat').value.trim();
+
+            if (!name || !phone || !insta || !bizName || !bizCat) {
+                alert("Please fill in all mandatory application fields marked with *.");
+                return;
+            }
+
+            buildOrderSummaryDOM();
+            navigateTo('screen-summary');
+        }
+
+        function calculateAggregateTotalCost() {
+            if (selectedAnswers['promoType'] === 'Free') return 0;
+            
+            let total = 0;
+            QUESTIONS.forEach(q => {
+                const chosenVal = selectedAnswers[q.key];
+                const matchOpt = q.options.find(o => o.value === chosenVal);
+                if (matchOpt) {
+                    total += matchOpt.cost;
+                }
+            });
+            return total;
+        }
+
+        function buildOrderSummaryDOM() {
+            const table = document.getElementById('summaryTable');
+            table.innerHTML = '';
+
+            const isFree = selectedAnswers['promoType'] === 'Free';
+
+            const dataRows = [
+                { label: 'Promotion Type', val: selectedAnswers['promoType'] },
+                { label: 'Actor', val: selectedAnswers['actor'] },
+                { label: 'Editing Level', val: selectedAnswers['editingLevel'] },
+                { label: 'Views', val: selectedAnswers['views'] },
+                { label: 'Upload Channel', val: selectedAnswers['uploadChannel'] },
+                { label: 'Video Type', val: selectedAnswers['videoType'] },
+                { label: 'Reel Duration', val: selectedAnswers['duration'] }
+            ];
+
+            dataRows.push(
+                { label: 'Customer Name', val: isFree ? 'Anonymous Guest' : document.getElementById('custName').value.trim() },
+                { label: 'Mobile Number', val: isFree ? 'N/A' : document.getElementById('custPhone').value.trim() },
+                { label: 'Instagram Username', val: isFree ? 'N/A' : document.getElementById('custInsta').value.trim() },
+                { label: 'Business Name', val: isFree ? 'N/A' : document.getElementById('custBizName').value.trim() },
+                { label: 'Business Category', val: isFree ? 'N/A' : document.getElementById('custBizCat').value.trim() },
+                { label: 'Special Instructions', val: isFree ? 'N/A' : (document.getElementById('custNotes').value.trim() || 'None') }
+            );
+
+            dataRows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${r.label}</td><td>${r.val}</td>`;
+                table.appendChild(tr);
+            });
+
+            const computedTotal = calculateAggregateTotalCost();
+            document.getElementById('summaryTotalDisplay').innerText = `Total Amount: ₹${computedTotal}`;
+        }
+
+        function commitOrderToStorage() {
+            const localRecords = JSON.parse(localStorage.getItem('sys_order_ledger') || '[]');
+            const nextIndexIdNumber = localRecords.length + 1;
+            const uniqueOrderId = `RP-${String(nextIndexIdNumber).padStart(4, '0')}`;
+
+            const timeNow = new Date();
+            const dateStr = timeNow.toLocaleDateString();
+            const timeStr = timeNow.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const computedTotal = calculateAggregateTotalCost();
+            const isFree = selectedAnswers['promoType'] === 'Free';
+
+            const payload = {
+                orderId: uniqueOrderId,
+                date: dateStr,
+                time: timeStr,
+                status: 'Pending',
+                totalAmount: computedTotal,
+                promoType: selectedAnswers['promoType'],
+                actor: selectedAnswers['actor'],
+                editingLevel: selectedAnswers['editingLevel'],
+                views: selectedAnswers['views'],
+                uploadChannel: selectedAnswers['uploadChannel'],
+                videoType: selectedAnswers['videoType'],
+                duration: selectedAnswers['duration'],
+                customerName: isFree ? 'Anonymous Guest' : document.getElementById('custName').value.trim(),
+                phone: isFree ? 'N/A' : document.getElementById('custPhone').value.trim(),
+                whatsapp: isFree ? 'N/A' : document.getElementById('custWhatsapp').value.trim(),
+                insta: isFree ? 'N/A' : document.getElementById('custInsta').value.trim(),
+                bizName: isFree ? 'N/A' : document.getElementById('custBizName').value.trim(),
+                bizCat: isFree ? 'N/A' : document.getElementById('custBizCat').value.trim(),
+                notes: isFree ? 'N/A' : document.getElementById('custNotes').value.trim()
+            };
+
+            localRecords.push(payload);
+            localStorage.setItem('sys_order_ledger', JSON.stringify(localRecords));
+
+            document.getElementById('successOrderId').innerText = uniqueOrderId;
+            document.getElementById('successTotal').innerText = `₹${computedTotal}`;
+
+            navigateTo('screen-success');
+        }
+
+        function authenticateAdminGateway() {
+            const input = document.getElementById('adminPasswordInput').value;
+            const absoluteToken = localStorage.getItem('admin_system_key');
+            const targetErrNode = document.getElementById('authError');
+
+            if (input === absoluteToken) {
+                targetErrNode.style.display = 'none';
+                navigateTo('screen-admin-dashboard');
+                renderAdminTable();
+            } else {
+                targetErrNode.style.display = 'block';
+            }
+        }
+
+        function exitAdminDashboard() {
+            clearFormFields();
+            navigateTo('screen-home');
+        }
+
+        function renderAdminTable() {
+            const records = JSON.parse(localStorage.getItem('sys_order_ledger') || '[]');
+            const searchVal = document.getElementById('adminSearchInput').value.toLowerCase().trim();
+            const filterVal = document.getElementById('adminFilterSelect').value;
+
+            calculateGlobalMetricsDashboard(records);
+
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+
+            const refinedRecordsSet = records.filter(item => {
+                const matchesSearch = item.orderId.toLowerCase().includes(searchVal) || 
+                                      item.customerName.toLowerCase().includes(searchVal) || 
+                                      item.phone.toLowerCase().includes(searchVal);
+                
+                let matchesFilter = true;
+                if (filterVal === 'pending') matchesFilter = (item.status === 'Pending');
+                if (filterVal === 'completed') matchesFilter = (item.status === 'Completed');
+                if (filterVal === 'free') matchesFilter = (item.promoType === 'Free');
+                if (filterVal === 'paid') matchesFilter = (item.promoType === 'Paid');
+
+                return matchesSearch && matchesFilter;
+            });
+
+            if(refinedRecordsSet.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; color:var(--text-muted); padding:30px;">No records match standard tracking criteria.</td></tr>`;
+                return;
+            }
+
+            refinedRecordsSet.forEach(rec => {
+                const tr = document.createElement('tr');
+                const badgeClass = rec.status === 'Completed' ? 'status-completed' : 'status-pending';
+                
+                tr.innerHTML = `
+                    <td style="font-weight:700; color:var(--primary);">${rec.orderId}</td>
+                    <td>${rec.date}</td>
+                    <td>${rec.time}</td>
+                    <td style="font-weight:600;">${rec.customerName}</td>
+                    <td>${rec.phone}</td>
+                    <td>${rec.promoType}</td>
+                    <td>${rec.actor}</td>
+                    <td>${rec.editingLevel}</td>
+                    <td>${rec.views}</td>
+                    <td>${rec.uploadChannel}</td>
+                    <td>${rec.videoType}</td>
+                    <td>${rec.duration}</td>
+                    <td style="font-weight:700; color:var(--success);">₹${rec.totalAmount}</td>
+                    <td><span class="status-badge ${badgeClass}">${rec.status}</span></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn" style="background:var(--accent);" onclick="viewOrderLogPayload('${rec.orderId}')">View</button>
+                            <button class="action-btn" style="background:var(--success);" onclick="mutateOrderStatusToDone('${rec.orderId}')">Mark as Completed</button>
+                            <button class="action-btn" style="background:var(--danger);" onclick="deleteSingleOrderRecord('${rec.orderId}')">Delete</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function calculateGlobalMetricsDashboard(records) {
+            document.getElementById('m-total-orders').innerText = records.length;
+            const revenue = records.reduce((sum, cur) => sum + Number(cur.totalAmount), 0);
+            document.getElementById('m-total-revenue').innerText = `₹${revenue}`;
+            document.getElementById('m-pending-orders').innerText = records.filter(r => r.status === 'Pending').length;
+            document.getElementById('m-completed-orders').innerText = records.filter(r => r.status === 'Completed').length;
+
+            const todayFormattedStr = new Date().toLocaleDateString();
+            document.getElementById('m-today-orders').innerText = records.filter(r => r.date === todayFormattedStr).length;
+        }
+
+        function viewOrderLogPayload(id) {
+            const records = JSON.parse(localStorage.getItem('sys_order_ledger') || '[]');
+            const targetingItem = records.find(r => r.orderId === id);
+            if(!targetingItem) return;
+
+            const modalBoxContent = document.getElementById('modalDataContent');
+            modalBoxContent.innerHTML = `
+                <table class="receipt-table">
+                    <tr><td>Order ID</td><td>${targetingItem.orderId}</td></tr>
+                    <tr><td>Date</td><td>${targetingItem.date}</td></tr>
+                    <tr><td>Time</td><td>${targetingItem.time}</td></tr>
+                    <tr><td>Status</td><td><strong>${targetingItem.status}</strong></td></tr>
+                    <tr><td>Total Amount</td><td>₹${targetingItem.totalAmount}</td></tr>
+                    <tr><td>Promotion Type</td><td>${targetingItem.promoType}</td></tr>
+                    <tr><td>Actor</td><td>${targetingItem.actor}</td></tr>
+                    <tr><td>Editing Level</td><td>${targetingItem.editingLevel}</td></tr>
+                    <tr><td>Views</td><td>${targetingItem.views}</td></tr>
+                    <tr><td>Upload Channel</td><td>${targetingItem.uploadChannel}</td></tr>
+                    <tr><td>Video Type</td><td>${targetingItem.videoType}</td></tr>
+                    <tr><td>Duration</td><td>${targetingItem.duration}</td></tr>
+                    <tr><td>Customer Name</td><td>${targetingItem.customerName}</td></tr>
+                    <tr><td>Phone Number</td><td>${targetingItem.phone}</td></tr>
+                    <tr><td>WhatsApp Number</td><td>${targetingItem.whatsapp}</td></tr>
+                    <tr><td>Instagram Username</td><td>${targetingItem.insta}</td></tr>
+                    <tr><td>Business Name</td><td>${targetingItem.bizName}</td></tr>
+                    <tr><td>Business Category</td><td>${targetingItem.bizCat}</td></tr>
+                    <tr style="border:none;"><td colspan="2"><div style="margin-top:10px; color:var(--text-muted);">Special Instructions:</div><p style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-top:4px;">${targetingItem.notes}</p></td></tr>
+                </table>
+            `;
+            document.getElementById('orderModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('orderModal').style.display = 'none';
+        }
+
+        function mutateOrderStatusToDone(id) {
+            let records = JSON.parse(localStorage.getItem('sys_order_ledger') || '[]');
+            const index = records.findIndex(r => r.orderId === id);
+            if(index !== -1) {
+                records[index].status = 'Completed';
+                localStorage.setItem('sys_order_ledger', JSON.stringify(records));
+                renderAdminTable();
+            }
+        }
+
+        function deleteSingleOrderRecord(id) {
+            if(confirm(`Delete record entry: ${id}?`)) {
+                let records = JSON.parse(localStorage.getItem('sys_order_ledger') || '[]');
+                records = records.filter(r => r.orderId !== id);
+                localStorage.setItem('sys_order_ledger', JSON.stringify(records));
+                renderAdminTable();
+            }
+        }
+
+        function exportSystemJSON() {
+            const data = localStorage.getItem('sys_order_ledger') || '[]';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `PROMO_ORDERS_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImportSelection() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function importSystemJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if(Array.isArray(parsed)) {
+                        localStorage.setItem('sys_order_ledger', JSON.stringify(parsed));
+                        alert("Database configuration state loaded successfully!");
+                        renderAdminTable();
+                    } else {
+                        alert("Invalid data structure detected.");
+                    }
+                } catch(err) {
+                    alert("Failed to parse JSON target file data.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function purgeSystemStorage() {
+            if(confirm("Are you sure you want to clear all orders? This cannot be undone.")) {
+                localStorage.setItem('sys_order_ledger', '[]');
+                renderAdminTable();
+            }
+        }
+
+        function promptPasswordMutation() {
+            const currentVerificationInput = prompt("Enter current administrative password:");
+            const activeToken = localStorage.getItem('admin_system_key');
+
+            if (currentVerificationInput === activeToken) {
+                const targetNewPasswordValue = prompt("Enter new password:");
+                if(targetNewPasswordValue && targetNewPasswordValue.trim().length > 0) {
+                    localStorage.setItem('admin_system_key', targetNewPasswordValue.trim());
+                    alert("Admin system key changed successfully.");
+                    exitAdminDashboard();
+                } else {
+                    alert("Invalid replacement key value.");
+                                    }
+            } else {
+                alert("Incorrect password verification signature.");
+            }
+        }
+    </script>
+</body>
+</html>
